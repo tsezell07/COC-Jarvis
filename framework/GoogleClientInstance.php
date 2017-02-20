@@ -10,6 +10,7 @@ namespace framework;
 
 use Google_Client;
 use Google_Service_Sheets;
+use Config;
 
 /**
  * Description of GoogleClientInstance
@@ -25,7 +26,7 @@ class GoogleClientInstance {
         $client = new Google_Client();
         $client->setApplicationName(self::APPLICATION_NAME);
         $client->setScopes(self::SCOPES);
-        $client->setDeveloperKey("AIzaSyBjUAjH5sZz0gWJjjV7lbJiZ78e2GxQOtw");
+        $client->setDeveloperKey(Config::$APIKey);
         $client->setAccessType('offline');
         return $client;
     }
