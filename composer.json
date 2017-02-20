@@ -1,0 +1,15 @@
+{
+    "name": "vendor/hudson",
+    "description": "Description of project Hudson.",
+    "authors": [
+        {
+            "name": "chris",
+            "email": "your@email.here"
+        }
+    ],
+    "require": {
+        "silex/silex": "~2.0",
+        "nategood/httpful": "*",
+        "google/apiclient": "^2.0"
+    }
+}
