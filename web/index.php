@@ -31,16 +31,31 @@ echo "<br/>";
 var_dump($hoarderDto);
 echo "<br/>";
 echo "<br/>";
-sendStatus($$today[0][0], totalDonations, $topDonaterDto);
-if (sizeof($hoarderDto->members) > 0) {
-    sendHoarderStatus($hoarderDto);
+
+if ($_GET['isCron'] == 1) {
+    sendStatus($today[0][0], $totalDonations, $topDonaterDto);
+    if (sizeof($hoarderDto->members) > 0) {
+        sendHoarderStatus($hoarderDto);
+    }
 }
 
 function sendStatus($today, $totalDonations, $topDonatorDto) {
     $slackUri = 'https://hooks.slack.com/services/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';
     $message = "Good morning.  I've collected some numbers for *" . $today . "* that you might find interesting.  " .
             "The total donations collected from everyone is *" . number_format($totalDonations * 10000) .
-            "* gold, a handsome sum I must say!";
+            "* gold";
+
+    if ($totalDonations <= 1500) {
+        $message .= ".  We have a serious problem.  I recommend cutting loose some of the slack for the health of the alliance.";
+    } else if ($totalDonations < 2000) {
+        $message .= ".  We are donating less than half the maximum an alliance can donate a day, quite troublesome indeed.";
+    } else if ($totalDonations <= 2500) {
+        $message .= ", a handsome sum I must say!";
+    } else if ($totalDonations <= 3000){
+        $message .= ".  Simply outstanding!  A pat on the back for everyone.";
+    } else {
+        $message .= ".  Brilliant!  This has exceeded my expectations, and my programming!";
+    }
 
     $attachments = array(
         array(
@@ -73,16 +88,16 @@ function sendStatus($today, $totalDonations, $topDonatorDto) {
 }
 
 function sendHoarderStatus($hoarderDto) {
-    $message = "Oh dear. This can't be right.  There appears to be a couple of members not pulling their weight.  " .
-            "Perhaps they should try donating within 12 hours of the reset so I can capture the data?";
+    $message = "Oh dear. We have a few untracked donations.  " .
+            "Perhaps members should try donating within 12 hours of the reset so I can capture the data?";
 
     $hoarderAttachment = array(
-        "fallback" => "Daily Hoarder Report Delivered",
+        "fallback" => "Daily Untracked Report Delivered",
         "color" => "#BE1D15",
         "fields" => array(
             array(
-                "title" => "0 Donations",
-                "value" => implode(", ", $hoarderDto->members),
+                "title" => "Untracked Donations",
+                "value" => "There are (" . sizeof($hoarderDto->members) . ") members who missed the cut off.  Please message the officers if you believe you are one of them to have this fixed.",
                 "short" => false
             )
         ),
