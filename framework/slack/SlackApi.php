@@ -25,13 +25,13 @@ class SlackApi {
         
         $uri = $this->SlackApiUri . "?" . $queryString;
         
-        error_log($uri);
+        //error_log($uri);
         
         $response = \Httpful\Request::post($uri)
                ->addHeader('Content-Type', 'text/plain; charset=utf-8')
                ->body($message)
                ->send();
         
-        error_log($response);
+        //error_log($response);
     }
 }

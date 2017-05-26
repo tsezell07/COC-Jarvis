@@ -36,8 +36,12 @@ class CommandProcessorFactory {
         
         if (preg_match($this->InitiateRegex, $text))
         {
-            $slackApi = new slack\SlackApi();
-            $slackApi->SendMessage('test');
+            $icp = new InitCommandProcessor($event);
+            $icp->Process();
+            $icp->SendResponse();
+            
+            //$slackApi = new slack\SlackApi();
+            //$slackApi->SendMessage('test');
             //return new InitCommandProcessor($event);
         }
         

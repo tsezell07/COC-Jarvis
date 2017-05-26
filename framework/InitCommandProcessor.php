@@ -7,26 +7,48 @@
  */
 
 namespace framework;
-
+use dal\managers\StateRepository;
+use framework\slack\SlackApi;
+use StateEnum;
 /**
  * Description of InitCommandProcessor
  *
  * @author chris
  */
 class InitCommandProcessor {
-    private $EventData;
+    private $eventData;
+    private $stateRepository;
+    private $slackApi;
+    
+    private $response;
     
     public function __construct($data) {
-        $this->EventData = $data;
+        $this->eventData = $data;        
+        $this->stateRepository = new StateRepository();
+        $this->slackApi = new SlackApi();
     }
     
     public function Process()
     {
-        $this->EventData['text'];
+        //error_log('icp: ' . $this->eventData['text']);
+        
+        $stateModel = $this->stateRepository->GetState();
+        
+        if ($stateModel->state == StateEnum::Sleeping)
+        {
+            $this->response = "Activating Advanced Strike Coordination Mode";
+            $this->stateRepository->SetState(StateEnum::Coordinating);
+        }
+        else
+        {
+            $this->response = "I am already assisting with the active conquest!";
+        }
+        //error_log($test->state);
+        
     }
     
     public function SendResponse()
     {
-       
+       $this->slackApi->SendMessage($this->response);
     }
 }
