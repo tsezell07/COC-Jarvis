@@ -4,25 +4,24 @@ require_once __DIR__.'/../vendor/autoload.php';
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use framework\CommandProcessorFactory;
-
-$test = new dal\managers\ConquestRepository();
-$currentConquest = $test->GetCurrentConquest();
-//
-//$userRepository = new \dal\managers\UserRepository();
-//$user = $userRepository->GetUserByName('christopher');
-//$test->SetCommander($user);
-
-$zoneRepository = new dal\managers\ZoneRepository();
-//$zoneRepository->CreateZone($currentConquest, 1);
-$zoneRepository->GetZone($currentConquest, 1);
+  
 $app = new Silex\Application();
 $app['debug'] = true;
 
 $app->post('', function(Request $request){
     $data = json_decode($request->getContent(), true);
-    error_log(print_r($data, true));
+    error_log(print_r($data, 1));
+    if ($data['type'] == 'url_verification')
+    {
+        return HandleVerification($data);
+    }    
     $commandProcessor = new CommandProcessorFactory();
-    $commandProcessor->CreateProcessor($request);
+    $processor = $commandProcessor->CreateProcessor($request);
+    if ($processor != null)
+    {
+        $processor->Process();
+        $processor->SendResponse();
+    }
     return new Response('', 200);
 });
 
@@ -38,5 +37,14 @@ $app->post('/slack/verify', function(Request $request){
     }    
     return new Response($data['challenge'], 200);
 });
+
+function HandleVerification($data)
+{
+    if ($data['token'] != Config::$JarvisToken)
+    {
+        return new Response('Invalid token', 400);
+    }    
+    return new Response($data['challenge'], 200);
+}
 
 $app->run();
