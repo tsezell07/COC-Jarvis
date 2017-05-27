@@ -16,10 +16,10 @@ namespace framework\slack;
 class SlackApi {
     private $SlackApiUri = 'https://slack.com/api/chat.postMessage';
     
-    public function SendMessage($message, $attachments=null)
+    public function SendMessage($message, $attachments=null, $channel='test2')
     {
         $queryString = "token=" . \Config::$JarvisBotAuthToken;
-        $queryString .= "&channel=" . "test2";
+        $queryString .= "&channel=" . $channel;
         $queryString .= "&as_user=" . "true";
         $queryString .= "&text=" . urlencode($message);
         if ($attachments != null)
