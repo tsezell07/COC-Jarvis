@@ -74,7 +74,7 @@ class ModelBuildingHelper {
         $toReturn->node = $node;
         $toReturn->user_id = $result['strike_user_id'];
         $user = ModelBuildingHelper::BuildStrikeUserModel($result);
-        $toReturn->user = $user;
+        $toReturn->user = $user->id == null ? null : $user;
         $toReturn->status = $result['status'];
         return $toReturn;
     }

@@ -15,9 +15,11 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class CommandProcessorFactory {
     //put your code here
-    private $JarvisRegex = '/(U59UGA9HS|jarvis)/i';
-    
-    private $InitiateRegex = '/(initiate|init|begin) (ASC)/i';
+    private $JarvisRegex = '/(U59UGA9HS|jarvis)/i';    
+    private $InitiateRegex = '/(initiate|init|begin) (ASC)/i';    
+    private $SetupRegex = '/(setup|start) (strike map)/i';
+    private $StatusRegex = '/(status)/i';
+    private $NodeCallRegex = '/^\d(\.|-)\d$/i';
     
     public function CreateProcessor(Request $request)
     { 
@@ -25,26 +27,27 @@ class CommandProcessorFactory {
         $event = $data['event'];
         if ($event['type'] != 'message')
         {
-            return;
+            return null;
         }
         
         $text = $event['text'];
-        if (!preg_match($this->JarvisRegex, $text))
+        if (!preg_match($this->JarvisRegex, $text) || preg_match($this->JarvisRegex, $event['user']))
         {
-            return;
+            return null;
         }
         
         if (preg_match($this->InitiateRegex, $text))
         {
-            $icp = new InitCommandProcessor($event);
-            $icp->Process();
-            $icp->SendResponse();
-            
-            //$slackApi = new slack\SlackApi();
-            //$slackApi->SendMessage('test');
-            //return new InitCommandProcessor($event);
+            return new InitCommandProcessor($event);
         }
-        
-        return;
+        else if (preg_match($this->StatusRegex, $text))
+        {
+            return new StatusCommandProcessor($event);
+        }
+        else if (preg_match($this->SetupRegex, $text))
+        {
+            return new StrikeCommandProcessor($event);
+        }
+        return null;
     }
 }

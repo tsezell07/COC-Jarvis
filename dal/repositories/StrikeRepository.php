@@ -33,10 +33,11 @@ class StrikeRepository {
         $this->adapter->query($sql);
     }
     
-    public function CreateStrike(NodeModel $node, UserModel $user)
+    public function CreateStrike(NodeModel $node, UserModel $user=null)
     {
+        $userValue = $user == null ? 'null' : "'" . $user->id . "'";
         $sql = 'INSERT INTO conquest_strikes (user_id, node_id, status) ' .
-                "VALUES ('" . $user->id . "', " . $node->id . ', 0)';
+                'VALUES (' . $userValue . ', ' . $node->id . ', 0)';
         $this->adapter->query($sql);
     }
     
@@ -70,7 +71,7 @@ class StrikeRepository {
                     'c.commander_id, c.date, c.phase, ' .
                     'u.id as user_id, u.name, u.vip ' .
                 'FROM conquest_strikes s ' .
-                'INNER JOIN users a ON a.id = s.user_id ' .
+                'LEFT JOIN users a ON a.id = s.user_id ' .
                 'INNER JOIN conquest_nodes n ON n.id = s.id ' . 
                 'INNER JOIN conquest_zones z ON z.id = n.zone_id ' .
                 'INNER JOIN conquest c ON c.id = z.conquest_id ' .
@@ -80,6 +81,7 @@ class StrikeRepository {
         $toReturn = [];
         foreach ($results as $item)
         {
+            error_log($results);
             $strike = ModelBuildingHelper::BuildStrikeModel($item);
             array_push($toReturn, $strike);
         }        

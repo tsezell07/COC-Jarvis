@@ -16,22 +16,26 @@ namespace framework\slack;
 class SlackApi {
     private $SlackApiUri = 'https://slack.com/api/chat.postMessage';
     
-    public function SendMessage($message)
+    public function SendMessage($message, $attachments=null)
     {
         $queryString = "token=" . \Config::$JarvisBotAuthToken;
         $queryString .= "&channel=" . "test2";
         $queryString .= "&as_user=" . "true";
-        $queryString .= "&text=" . $message;
+        $queryString .= "&text=" . urlencode($message);
+        if ($attachments != null)
+        {
+            $queryString .= "&attachments=" . urlencode(json_encode($attachments));
+        }
         
         $uri = $this->SlackApiUri . "?" . $queryString;
         
-        //error_log($uri);
+        error_log($uri);
         
         $response = \Httpful\Request::post($uri)
                ->addHeader('Content-Type', 'text/plain; charset=utf-8')
                ->body($message)
                ->send();
         
-        //error_log($response);
+        error_log($response);
     }
 }

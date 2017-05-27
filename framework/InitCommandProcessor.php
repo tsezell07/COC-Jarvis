@@ -15,7 +15,7 @@ use StateEnum;
  *
  * @author chris
  */
-class InitCommandProcessor {
+class InitCommandProcessor implements ICommandProcessor {
     private $eventData;
     private $stateRepository;
     private $slackApi;
@@ -30,7 +30,7 @@ class InitCommandProcessor {
     
     public function Process()
     {
-        //error_log('icp: ' . $this->eventData['text']);
+        error_log('icp: ' . $this->eventData['text']);
         
         $stateModel = $this->stateRepository->GetState();
         
@@ -49,6 +49,7 @@ class InitCommandProcessor {
     
     public function SendResponse()
     {
+       error_log('sending message');
        $this->slackApi->SendMessage($this->response);
     }
 }
