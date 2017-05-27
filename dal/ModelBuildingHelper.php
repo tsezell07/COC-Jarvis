@@ -11,6 +11,7 @@ use dal\models\UserModel;
 use dal\models\ConquestModel;
 use dal\models\ZoneModel;
 use dal\models\NodeModel;
+use dal\models\StrikeModel;
 /**
  * Description of ModelBuildingHelper
  *
@@ -61,6 +62,29 @@ class ModelBuildingHelper {
         $toReturn->zone = $zone;
         $toReturn->node = $result['node'];
         $toReturn->is_reserved = $result['is_reserved'];
+        return $toReturn;
+    }
+    
+    public static function BuildStrikeModel($result)
+    {
+        $toReturn = new StrikeModel();
+        $toReturn->id = $result['strike_id'];
+        $toReturn->node_id = $result['strike_node_id'];
+        $node = ModelBuildingHelper::BuildNodeModel($result);
+        $toReturn->node = $node;
+        $toReturn->user_id = $result['strike_user_id'];
+        $user = ModelBuildingHelper::BuildStrikeUserModel($result);
+        $toReturn->user = $user;
+        $toReturn->status = $result['status'];
+        return $toReturn;
+    }
+    
+    private static function BuildStrikeUserModel($result)
+    {
+        $toReturn = new UserModel();
+        $toReturn->id = $result['a_user_id'];
+        $toReturn->name = $result['a_name'];
+        $toReturn->vip = $result['a_vip'];
         return $toReturn;
     }
 }

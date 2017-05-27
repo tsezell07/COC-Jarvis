@@ -36,8 +36,6 @@ class NodeRepository {
                 'AND n.node = ' . $nodeNumber;
         $result = $this->adapter->query_single($sql);
         $node = ModelBuildingHelper::BuildNodeModel($result);
-        
-        echo '<pre>' . print_r($node, 1) . '</pre>';
         return $node;
     }
     

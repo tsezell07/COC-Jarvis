@@ -9,7 +9,6 @@
 namespace dal\managers;
 use \DateTime;
 use dal\models\UserModel;
-use dal\models\ConquestModel;
 use dal\DataAccessAdapter;
 use dal\ModelBuildingHelper;
 /**
@@ -68,12 +67,8 @@ class ConquestRepository {
         {
             $this->CreateConquest($dateTime, $phase, $user);
             $result = $this->adapter->query_single($sql);
-        }
-        
+        }        
         $conquest = ModelBuildingHelper::BuildConquestModel($result);
-        echo 'Conquest:';
-        var_dump($conquest);
-        echo 'End Conquest';
         return $conquest;
     }
     
