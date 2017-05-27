@@ -11,6 +11,7 @@ use \DateTime;
 use dal\models\UserModel;
 use dal\models\ConquestModel;
 use dal\DataAccessAdapter;
+use dal\ModelBuildingHelper;
 /**
  * Description of ConquestRepository
  *
@@ -51,17 +52,14 @@ class ConquestRepository {
         $today = new DateTime();     
         echo $today->format('Y-m-d H:i:s') . '<br/>';
         $day = $this->GetClosestDay($today);
-        $phase = $this->GetPhase($day);
-        
-        var_dump($day);
-        var_dump($phase);
-        
+        $phase = $this->GetPhase($day);        
         return $this->GetConquest($day, $phase);
     }
     
     private function GetConquest(DateTime $dateTime, $phase, UserModel $user=null)
     {
-        $sql = 'SELECT c.id, c.commander_id, c.date, c.phase, u.id as user_id, u.name, u.vip ' .
+        $sql = 'SELECT c.id as conquest_id, c.commander_id, c.date, c.phase, ' .
+                    'u.id as user_id, u.name, u.vip ' .
                 'FROM conquest c ' .
                 'LEFT JOIN users u ON u.id = c.commander_id ' .
                 "WHERE c.date = '" . $dateTime->format('Y-m-d H:i:s') . "'";
@@ -72,21 +70,11 @@ class ConquestRepository {
             $result = $this->adapter->query_single($sql);
         }
         
-        $toReturn = new ConquestModel();
-        $toReturn->id = $result['id'];
-        $toReturn->date = $result['date'];
-        $toReturn->phase = $result['phase'];
-        $toReturn->commander_id = $result['commander_id'];
-        
-        if ($toReturn->commander_id != null)
-        {
-            $commander = new UserModel();
-            $commander->id = $result['user_id'];
-            $commander->name = $result['name'];
-            $commander->vip = $result['vip'];
-            $toReturn->commander = $commander;
-        }
-        return $toReturn;
+        $conquest = ModelBuildingHelper::BuildConquestModel($result);
+        echo 'Conquest:';
+        var_dump($conquest);
+        echo 'End Conquest';
+        return $conquest;
     }
     
     private function CreateConquest(DateTime $dateTime, $phase, UserModel $user=null)

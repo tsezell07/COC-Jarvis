@@ -7,7 +7,7 @@
  */
 
 namespace dal\managers;
-use dal\models\UserModel;
+use dal\ModelBuildingHelper;
 use dal\DataAccessAdapter;
 
 /**
@@ -24,28 +24,19 @@ class UserRepository {
     
     public function GetUserByName($name)
     {
-        $sql = 'SELECT id, name, vip ' .
+        $sql = 'SELECT id as user_id, name, vip ' .
                 'FROM users ' .
                 "WHERE name = '$name'";
         $result = $this->adapter->query_single($sql);
-        return $this->BuildUserModel($result);
+        return ModelBuildingHelper::BuildUserModel($result);
     }
     
     public function GetUserById($id)
     {
-        $sql = 'SELECT id, name, vip ' .
+        $sql = 'SELECT id as user_id, name, vip ' .
                 'FROM users ' .
                 "WHERE id = '$id'";
         $result = $this->adapter->query_single($sql);
-        return $this->BuildUserModel($result);
-    }
-    
-    private function BuildUserModel($result)
-    {
-        $toReturn = new UserModel();
-        $toReturn->id = $result['id'];
-        $toReturn->name = $result['name'];
-        $toReturn->vip = $result['vip'];
-        return $toReturn;
+        return ModelBuildingHelper::BuildUserModel($result);
     }
 }

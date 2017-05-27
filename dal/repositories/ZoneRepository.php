@@ -7,9 +7,9 @@
  */
 
 namespace dal\managers;
-use dal\models\ZoneModel;
 use dal\models\ConquestModel;
 use dal\DataAccessAdapter;
+use dal\ModelBuildingHelper;
 /**
  * Description of ZonesRepository
  *
@@ -24,9 +24,12 @@ class ZoneRepository {
     
     public function GetZone(ConquestModel $conquest, $zone)
     {
-        $sql = 'SELECT z.id, z.conquest_id, z.zone, z.battle_count, z.is_owned, c.date, c.phase, c.commander_id ' .
+        $sql = 'SELECT z.id as zone_id, z.conquest_id, z.zone, z.battle_count, z.is_owned, ' . 
+                    'c.date, c.phase, c.commander_id, ' .
+                    'u.id as user_id, u.name, u.vip ' .
                 'FROM conquest_zones z ' .
                 'INNER JOIN conquest c ON c.id = z.conquest_id ' .
+                'LEFT JOIN users u ON u.id = c.commander_id ' .
                 'WHERE conquest_id = ' . $conquest->id . ' ' .
                 'AND zone = ' . $zone . ' ' .
                 'ORDER BY battle_count DESC';
@@ -35,8 +38,7 @@ class ZoneRepository {
         {
             return null;
         }
-        $zone = $this->BuildZoneModel($result);        
-        var_dump($zone);
+        $zone = ModelBuildingHelper::BuildZoneModel($result);
         return $zone;
     }
     
@@ -51,35 +53,5 @@ class ZoneRepository {
         $sql = 'INSERT INTO conquest_zones (conquest_id, zone, battle_count, is_owned) ' .
                 'VALUES (' . $conquest->id . ', ' . $zone . ', ' . $battleCount . ', 0)';
         $this->adapter->query($sql);
-    }
-    
-    private function BuildZoneModel($result)
-    {
-        $toReturn = new ZoneModel();
-        $toReturn->id = $result['id'];
-        $toReturn->conquest_id = $result['conquest_id'];
-        $toReturn->conquest = $this->BuildConquestModel($result);
-        $toReturn->zone = $result['zone'];
-        $toReturn->battle_count = $result['battle_count'];
-        $toReturn->is_owned = $result['is_owned'];
-        return $toReturn;
-    }
-    
-    private function BuildConquestModel($result)
-    {
-        $toReturn = new ConquestModel();
-        $toReturn->id = $result['conquest_id'];
-        $toReturn->date = $result['date'];
-        $toReturn->phase = $result['phase'];
-        $toReturn->commander_id = $result['commander_id'];
-        return $toReturn;
-//        if ($toReturn->commander_id != null)
-//        {
-//            $commander = new UserModel();
-//            $commander->id = $result['user_id'];
-//            $commander->name = $result['name'];
-//            $commander->vip = $result['vip'];
-//            $toReturn->commander = $commander;
-//        }
     }
 }
