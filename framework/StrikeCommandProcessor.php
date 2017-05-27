@@ -88,6 +88,6 @@ class StrikeCommandProcessor implements ICommandProcessor{
     
     public function SendResponse()
     {
-        $this->slackApi->SendMessage($this->response);
+        $this->slackApi->SendMessage($this->response, null, $this->eventData['channel']);
     }
 }

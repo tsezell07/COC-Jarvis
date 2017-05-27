@@ -17,7 +17,7 @@ class CommandProcessorFactory {
     //put your code here
     private $JarvisRegex = '/(U59UGA9HS|jarvis)/i';    
     private $InitiateRegex = '/(initiate|init|begin) (ASC)/i';    
-    private $SetupRegex = '/(setup|start) (strike map)/i';
+    private $SetupRegex = '/(setup|start) (zone)/i';
     private $StatusRegex = '/(status)/i';
     private $NodeCallRegex = '/^\d(\.|-)\d$/i';
     

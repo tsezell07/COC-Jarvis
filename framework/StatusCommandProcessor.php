@@ -66,6 +66,10 @@ class StatusCommandProcessor implements ICommandProcessor{
             foreach ($strikes as $strike)
             {
                 $response .= $strike->node->zone->zone . '.' . $strike->node->node . '  - ';
+                if ($strike->node->is_reserved)
+                {
+                    $response .= '(reserved) ';
+                }
                 if ($strike->user != null)
                 {
                     $response .= $strike->user->name;
@@ -83,13 +87,13 @@ class StatusCommandProcessor implements ICommandProcessor{
                 )
             ));
         }
-        $this->response = 'Here are the active zones I am tracking:';
+        $this->response = empty($zones) ? 'I am currently not tracking any zones :)' :'Here are the active zones I am tracking:';
         $this->attachments = $attachments;
     }
 
     public function SendResponse() 
     {
-        $this->slackApi->SendMessage($this->response, $this->attachments);
+        $this->slackApi->SendMessage($this->response, $this->attachments, $this->eventData['channel']);
     }
 
 }
