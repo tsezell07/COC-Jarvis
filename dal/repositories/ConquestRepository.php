@@ -21,6 +21,7 @@ class ConquestRepository {
     const Phase3 = 4;
     const Phase1 = 12;
     const Phase2 = 20;
+    const PhaseLength = 2;
     
     
     public function __construct() {
@@ -47,9 +48,13 @@ class ConquestRepository {
     
     public function GetCurrentConquest()
     {
-        $today = new DateTime();        
+        $today = new DateTime();     
+        echo $today->format('Y-m-d H:i:s') . '<br/>';
         $day = $this->GetClosestDay($today);
         $phase = $this->GetPhase($day);
+        
+        var_dump($day);
+        var_dump($phase);
         
         return $this->GetConquest($day, $phase);
     }
@@ -130,7 +135,7 @@ class ConquestRepository {
         switch ($dayOfWeek)
         {
             case 'Tuesday':                
-                if ($hour <= ConquestRepository::Phase3 + 3)
+                if ($hour <= ConquestRepository::Phase3 + ConquestRepository::PhaseLength)
                 {
                     $date->setTime(ConquestRepository::Phase3, 0, 0);
                 }
@@ -149,7 +154,7 @@ class ConquestRepository {
                 $date->setTime(ConquestRepository::Phase1, 0, 0);
                 break;
             case 'Friday':
-                if ($hour <= ConquestRepository::Phase1 + 3)
+                if ($hour <= ConquestRepository::Phase1 + ConquestRepository::PhaseLength)
                 {
                     $date->setTime(ConquestRepository::Phase1, 0, 0);
                 }
@@ -159,11 +164,11 @@ class ConquestRepository {
                 }
             case 'Saturday':
             case 'Sunday':
-                if ($hour <= ConquestRepository::Phase3 + 3)
+                if ($hour <= ConquestRepository::Phase3 + ConquestRepository::PhaseLength)
                 {
                     $date->setTime(ConquestRepository::Phase3, 0, 0);
                 }
-                else if ($hour <= ConquestRepository::Phase1 + 3)
+                else if ($hour <= ConquestRepository::Phase1 + ConquestRepository::PhaseLength)
                 {
                     $date->setTime(ConquestRepository::Phase1, 0, 0);
                 }

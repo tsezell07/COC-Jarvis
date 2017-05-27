@@ -5,13 +5,16 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use framework\CommandProcessorFactory;
 
-//$test = new dal\managers\ConquestRepository();
-//$test->GetCurrentConquest();
+$test = new dal\managers\ConquestRepository();
+$currentConquest = $test->GetCurrentConquest();
 //
 //$userRepository = new \dal\managers\UserRepository();
 //$user = $userRepository->GetUserByName('christopher');
 //$test->SetCommander($user);
 
+$zoneRepository = new dal\managers\ZoneRepository();
+//$zoneRepository->CreateZone($currentConquest, 1);
+$zoneRepository->GetZone($currentConquest, 1);
 $app = new Silex\Application();
 $app['debug'] = true;
 
