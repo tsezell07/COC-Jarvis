@@ -25,7 +25,9 @@ class ZoneRepository {
     public function UpdateZone(ConquestModel $conquest, $zone, $isCompleted=0)
     {
         $sql = 'UPDATE conquest_zones ' .
-                'SET is_owned = ' . $isCompleted;
+                'SET is_owned = ' . $isCompleted . ' ' .
+                'WHERE zone = ' .  $zone . ' ' .
+                'AND conquest_id = ' . $conquest->id;
         $this->adapter->query($sql);
     }
     
@@ -42,6 +44,11 @@ class ZoneRepository {
         $this->adapter->query($sql);
         $results = $this->adapter->query($sql);
         $toReturn = [];
+        if ($results == null)
+        {
+            return $toReturn;
+        }
+        
         foreach ($results as $item)
         {
             $strike = ModelBuildingHelper::BuildZoneModel($item);

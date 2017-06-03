@@ -19,19 +19,37 @@ class CommandProcessorFactory {
     private $InitiateRegex = '/(initiate|init|begin) (ASC)/i';    
     private $SetupRegex = '/(setup|start) (zone)/i';
     private $StatusRegex = '/(status)/i';
-    private $NodeCallRegex = '/^\d(\.|-)\d$/i';
+    private $NodeCallRegex = '/(^\d{1,2})(\.|-)(\d{1,2})$/i';
+    private $ZoneCompleteRegex = '/(zone) (\d{1,2}) (completed|is ours|finished|done|lost)/i';
+    private $HoldRegex = '/(hold) (\d{1,2})(\.|-)(\d{1,2})/i';
+    private $ClearRegex = '/(clear) (\d{1,2})(\.|-)(\d{1,2})/i';
     
     public function CreateProcessor(Request $request)
     { 
         $data = json_decode($request->getContent(), true);
         $event = $data['event'];
-        if ($event['type'] != 'message')
+        if ($event['type'] != 'message' || $event['subtype'] == 'message_changed')
         {
+            error_log('returning null 12');
             return null;
         }
         
+        if (preg_match($this->JarvisRegex, $event['user']))
+        {
+            return;
+        }
+        
         $text = $event['text'];
-        if (!preg_match($this->JarvisRegex, $text) || preg_match($this->JarvisRegex, $event['user']))
+        if (preg_match($this->NodeCallRegex, $text))
+        {
+            return new NodeCallCommandProcessor($event);
+        }
+        if (preg_match($this->ZoneCompleteRegex, $text))
+        {
+            error_log('test');
+            return new ZoneCommandProcessor($event);
+        }
+        if (!preg_match($this->JarvisRegex, $text))
         {
             return null;
         }
@@ -42,11 +60,19 @@ class CommandProcessorFactory {
         }
         else if (preg_match($this->StatusRegex, $text))
         {
-            return new StatusCommandProcessor($event);
+            return new StatusCommandProcessor($event, true);
+        }
+        else if (preg_match($this->HoldRegex, $text))
+        {
+            return new HoldCommandProcessor($event);
         }
         else if (preg_match($this->SetupRegex, $text))
         {
             return new StrikeCommandProcessor($event);
+        }
+        else if (preg_match($this->ClearRegex, $text))
+        {
+            return new ClearCommandProcessor($event);
         }
         return null;
     }

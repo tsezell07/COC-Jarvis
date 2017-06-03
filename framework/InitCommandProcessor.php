@@ -7,7 +7,7 @@
  */
 
 namespace framework;
-use dal\managers\StateRepository;
+use dal\managers\CoreRepository;
 use framework\slack\SlackApi;
 use StateEnum;
 /**
@@ -17,14 +17,14 @@ use StateEnum;
  */
 class InitCommandProcessor implements ICommandProcessor {
     private $eventData;
-    private $stateRepository;
+    private $coreRepository;
     private $slackApi;
     
     private $response;
     
     public function __construct($data) {
         $this->eventData = $data;        
-        $this->stateRepository = new StateRepository();
+        $this->coreRepository = new CoreRepository();
         $this->slackApi = new SlackApi();
     }
     
@@ -32,12 +32,12 @@ class InitCommandProcessor implements ICommandProcessor {
     {
         error_log('icp: ' . $this->eventData['text']);
         
-        $stateModel = $this->stateRepository->GetState();
+        $stateModel = $this->coreRepository->GetState();
         
         if ($stateModel->state == StateEnum::Sleeping)
         {
             $this->response = "Activating Advanced Strike Coordination Mode";
-            $this->stateRepository->SetState(StateEnum::Coordinating);
+            $this->coreRepository->SetState(StateEnum::Coordinating);
         }
         else
         {
