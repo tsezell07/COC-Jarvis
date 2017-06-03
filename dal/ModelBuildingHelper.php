@@ -12,6 +12,7 @@ use dal\models\ConquestModel;
 use dal\models\ZoneModel;
 use dal\models\NodeModel;
 use dal\models\StrikeModel;
+use DateTime;
 /**
  * Description of ModelBuildingHelper
  *
@@ -32,7 +33,7 @@ class ModelBuildingHelper {
     {
         $toReturn = new ConquestModel();
         $toReturn->id = $result['conquest_id'];
-        $toReturn->date = $result['date'];
+        $toReturn->date = new DateTime($result['date']);
         $toReturn->phase = $result['phase'];
         $toReturn->commander_id = $result['commander_id'];
         $commander = ModelBuildingHelper::BuildUserModel($result);
