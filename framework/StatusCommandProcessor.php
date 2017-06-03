@@ -80,7 +80,7 @@ class StatusCommandProcessor implements ICommandProcessor{
         }
         $this->response = empty($zones) ? 'I am currently not tracking any zones :)' 
                 : 'Here are the active zones I am tracking:';
-        error_log(print_r($attachments, 1));
+        //error_log(print_r($attachments, 1));
         $this->attachments = $attachments;
     }
 

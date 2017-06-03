@@ -23,6 +23,7 @@ class CommandProcessorFactory {
     private $ZoneCompleteRegex = '/(zone) (\d{1,2}) (completed|is ours|finished|done|lost)/i';
     private $HoldRegex = '/(hold) (\d{1,2})(\.|-)(\d{1,2})/i';
     private $ClearRegex = '/(clear) (\d{1,2})(\.|-)(\d{1,2})/i';
+    private $StatsRegex = '/(stats)/i';
     
     public function CreateProcessor(Request $request)
     { 
@@ -30,7 +31,6 @@ class CommandProcessorFactory {
         $event = $data['event'];
         if ($event['type'] != 'message' || $event['subtype'] == 'message_changed')
         {
-            error_log('returning null 12');
             return null;
         }
         
@@ -46,7 +46,6 @@ class CommandProcessorFactory {
         }
         if (preg_match($this->ZoneCompleteRegex, $text))
         {
-            error_log('test');
             return new ZoneCommandProcessor($event);
         }
         if (!preg_match($this->JarvisRegex, $text))
@@ -73,6 +72,10 @@ class CommandProcessorFactory {
         else if (preg_match($this->ClearRegex, $text))
         {
             return new ClearCommandProcessor($event);
+        }
+        else if (preg_match($this->StatsRegex, $text))
+        {
+            return new StatsCommandProcessor($event);
         }
         return null;
     }

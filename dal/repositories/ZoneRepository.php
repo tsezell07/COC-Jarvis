@@ -57,6 +57,29 @@ class ZoneRepository {
         return $toReturn;
     }
     
+    public function GetAllZonesByConquest(ConquestModel $conquest)
+    {
+        $sql = 'SELECT z.id as zone_id, z.conquest_id, z.zone, z.battle_count, z.is_owned, ' . 
+                    'c.date, c.phase, c.commander_id ' .
+                'FROM conquest_zones z ' .
+                'INNER JOIN conquest c ON c.id = z.conquest_id ' .
+                'WHERE conquest_id = ' . $conquest->id;
+        $this->adapter->query($sql);
+        $results = $this->adapter->query($sql);
+        $toReturn = [];
+        if ($results == null)
+        {
+            return $toReturn;
+        }
+        
+        foreach ($results as $item)
+        {
+            $strike = ModelBuildingHelper::BuildZoneModel($item);
+            array_push($toReturn, $strike);
+        }
+        return $toReturn;
+    }
+    
     public function GetZone(ConquestModel $conquest, $zone)
     {
         $sql = 'SELECT z.id as zone_id, z.conquest_id, z.zone, z.battle_count, z.is_owned, ' . 

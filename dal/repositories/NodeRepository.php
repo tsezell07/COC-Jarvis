@@ -9,6 +9,7 @@
 namespace dal\managers;
 use dal\models\ZoneModel;
 use dal\models\NodeModel;
+use dal\models\ConquestModel;
 use dal\DataAccessAdapter;
 use dal\ModelBuildingHelper;
 /**
@@ -59,6 +60,27 @@ class NodeRepository {
                 'INNER JOIN conquest c ON c.id = z.conquest_id ' .
                 'LEFT JOIN users u ON u.id = c.commander_id ' .
                 'WHERE n.zone_id = ' . $zone->id;
+        $results = $this->adapter->query($sql);
+        $toReturn = [];
+        foreach ($results as $item)
+        {
+            $node = ModelBuildingHelper::BuildNodeModel($item);
+            array_push($toReturn, $node);
+        }        
+        return $toReturn;
+    }
+    
+    public function GetAllNodesByConquest(ConquestModel $conquest)
+    {
+        $sql = 'SELECT n.id as node_id, n.zone_id, n.node, n.is_reserved, ' .
+                    'z.conquest_id, z.zone, z.battle_count, z.is_owned, ' .
+                    'c.commander_id, c.date, c.phase, ' .
+                    'u.id as user_id, u.name, u.vip ' .
+                'FROM conquest_nodes n ' . 
+                'INNER JOIN conquest_zones z ON z.id = n.zone_id ' .
+                'INNER JOIN conquest c ON c.id = z.conquest_id ' .
+                'LEFT JOIN users u ON u.id = c.commander_id ' .
+                'WHERE c.id = ' . $conquest->id;
         $results = $this->adapter->query($sql);
         $toReturn = [];
         foreach ($results as $item)
