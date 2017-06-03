@@ -14,7 +14,9 @@ namespace framework\slack;
  * @author chris
  */
 class SlackApi {
-    private $SlackApiUri = 'https://slack.com/api/chat.postMessage';
+    private $PostMessageApiUri = 'https://slack.com/api/chat.postMessage';
+    private $UpdateMessageApiUri = 'https://slack.com/api/chat.update';
+    private $GroupHistoryApiUri = 'https://slack.com/api/channels.history';
     
     public function SendMessage($message, $attachments=null, $channel='test2')
     {
@@ -25,17 +27,54 @@ class SlackApi {
         if ($attachments != null)
         {
             $queryString .= "&attachments=" . urlencode(json_encode($attachments));
-        }
-        
-        $uri = $this->SlackApiUri . "?" . $queryString;
-        
-        error_log($uri);
-        
+        }        
+        $uri = $this->PostMessageApiUri . "?" . $queryString;        
         $response = \Httpful\Request::post($uri)
                ->addHeader('Content-Type', 'text/plain; charset=utf-8')
                ->body($message)
                ->send();
         
-        error_log($response);
+        return $response;
+    }
+    
+    public function UpdateMessage($ts, $channel, $message, $attachments=[])
+    {
+        $queryString = "token=" . \Config::$JarvisBotAuthToken;
+        $queryString .= "&ts=" . $ts;
+        $queryString .= "&channel=" . $channel;
+        $queryString .= "&as_user=" . "true";
+        $queryString .= "&text=" . urlencode($message);
+        $queryString .= "&attachments=" . urlencode(json_encode($attachments));
+        $uri = $this->UpdateMessageApiUri . "?" . $queryString;        
+        $response = \Httpful\Request::post($uri)
+               ->addHeader('Content-Type', 'text/plain; charset=utf-8')
+               ->body($message)
+               ->send();
+        
+        return $response;
+    }
+    
+    public function GetGroupMessagesSince($ts, $channel)
+    {
+        $queryString = "token=" . \Config::$JarvisOAuthToken;
+        $queryString .= "&oldest=" . $ts;
+        $queryString .= "&channel=" . $channel;
+        $queryString .= "&count=3";
+        $uri = $this->GroupHistoryApiUri . "?" . $queryString;        
+        $response = \Httpful\Request::post($uri)
+               ->addHeader('Content-Type', 'text/plain; charset=utf-8')
+               ->send();
+        
+        return $response;
+    }
+    
+    public function GetMessagesSince($ts, $channel)
+    {
+        
+    }
+    
+    public function DeleteMessage()
+    {
+        
     }
 }

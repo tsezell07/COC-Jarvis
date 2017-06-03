@@ -8,6 +8,7 @@
 
 namespace dal\managers;
 use dal\models\ZoneModel;
+use dal\models\NodeModel;
 use dal\DataAccessAdapter;
 use dal\ModelBuildingHelper;
 /**
@@ -20,6 +21,14 @@ class NodeRepository {
     
     public function __construct() {
         $this->adapter = new DataAccessAdapter();
+    }
+    
+    public function UpdateNode(NodeModel $node)
+    {
+        $sql = 'UPDATE conquest_nodes ' .
+                'SET is_reserved = ' . $node->is_reserved . ' ' .
+                'WHERE id = ' . $node->id;
+        $this->adapter->query($sql);
     }
     
     public function GetNode(ZoneModel $zone, $nodeNumber)

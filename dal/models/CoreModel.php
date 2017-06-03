@@ -13,7 +13,8 @@ namespace dal\models;
  *
  * @author chris
  */
-class StateModel {
-    //put your code here
+class CoreModel {
     public $state;
+    public $message_ts;
+    public $message_channel;
 }

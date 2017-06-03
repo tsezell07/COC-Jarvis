@@ -12,6 +12,7 @@ use dal\managers\ConquestRepository;
 use dal\managers\ZoneRepository;
 use dal\managers\NodeRepository;
 use dal\managers\StrikeRepository;
+use dal\managers\CoreRepository;
 
 /**
  * Description of StatusCommandProcessor
@@ -24,19 +25,23 @@ class StatusCommandProcessor implements ICommandProcessor{
     private $zoneRepository;
     private $nodeRepository;
     private $strikeRepository;
+    private $coreRepository;
     private $slackApi;
     
     private $response;
     private $attachments;
+    private $forceMessage;
     
-    public function __construct($data) {
-        $this->eventData = $data;        
+    public function __construct($data, $forceMessage=false) {
+        $this->eventData = $data;
+        $this->forceMessage = $forceMessage;
         $this->slackApi = new SlackApi();
         
         $this->conquestRepository = new ConquestRepository();
         $this->zoneRepository = new ZoneRepository();
         $this->nodeRepository = new NodeRepository();
         $this->strikeRepository = new StrikeRepository();
+        $this->coreRepository = new CoreRepository();
     }
     
     public function Process()
@@ -44,20 +49,6 @@ class StatusCommandProcessor implements ICommandProcessor{
         $conquest = $this->conquestRepository->GetCurrentConquest();
         $zones = $this->zoneRepository->GetAllZones($conquest);
         
-//        $response = '';
-//        foreach ($zones as $zone)
-//        {
-//            $strikes = $this->strikeRepository->GetStrikesByZone($zone);
-//            foreach ($strikes as $strike)
-//            {
-//                $response .= $strike->node->zone->zone . '.' . $strike->node->node . '  - ';
-//                if ($strike->user != null)
-//                {
-//                    $response .= $strike->user->name;
-//                }
-//                $response .= "\n";
-//            }
-//        }
         $attachments = array();
         foreach ($zones as $zone)
         {
@@ -72,7 +63,7 @@ class StatusCommandProcessor implements ICommandProcessor{
                 }
                 if ($strike->user != null)
                 {
-                    $response .= $strike->user->name;
+                    $response .= "<@" . $strike->user->name . ">";
                 }
                 $response .= "\n";
             }
@@ -87,13 +78,33 @@ class StatusCommandProcessor implements ICommandProcessor{
                 )
             ));
         }
-        $this->response = empty($zones) ? 'I am currently not tracking any zones :)' :'Here are the active zones I am tracking:';
+        $this->response = empty($zones) ? 'I am currently not tracking any zones :)' 
+                : 'Here are the active zones I am tracking:';
+        error_log(print_r($attachments, 1));
         $this->attachments = $attachments;
     }
 
     public function SendResponse() 
     {
-        $this->slackApi->SendMessage($this->response, $this->attachments, $this->eventData['channel']);
+        $channel = $this->coreRepository->GetMessageChannel();
+        $ts = $this->coreRepository->GetMessageTimestamp();
+        if (!$this->forceMessage 
+                && $channel == $this->eventData['channel'] 
+                && $channel != null 
+                && $ts != null)
+        {
+            $response = $this->slackApi->GetGroupMessagesSince($ts, $channel);
+            $shouldUpdate = !$response->body->has_more;
+        }
+        if ($shouldUpdate)
+        {
+            $this->slackApi->UpdateMessage($ts, $channel, $this->response, $this->attachments);
+        }
+        else
+        {            
+            $response = $this->slackApi->SendMessage($this->response, $this->attachments, $this->eventData['channel']);
+            $this->coreRepository->SetMessageProperties($response->body->ts, $response->body->channel);  
+        }
     }
 
 }
