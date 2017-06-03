@@ -11,18 +11,14 @@ use \DateTime;
 use dal\models\UserModel;
 use dal\DataAccessAdapter;
 use dal\ModelBuildingHelper;
+use dal\Phases;
 /**
  * Description of ConquestRepository
  *
  * @author chris
  */
 class ConquestRepository {
-    private $adapter;
-    const Phase3 = 4;
-    const Phase1 = 12;
-    const Phase2 = 20;
-    const PhaseLength = 2;
-    
+    private $adapter;    
     
     public function __construct() {
         $this->adapter = new DataAccessAdapter();
@@ -55,6 +51,14 @@ class ConquestRepository {
         return $this->GetConquest($day, $phase);
     }
     
+    public function GetConquestByDate(DateTime $dateTime)
+    {
+        echo $dateTime->format('Y-m-d H:i:s') . '<br/>';
+        $day = $this->GetClosestDay($dateTime);
+        $phase = $this->GetPhase($day);        
+        return $this->GetConquest($day, $phase);
+    }
+    
     private function GetConquest(DateTime $dateTime, $phase, UserModel $user=null)
     {
         $sql = 'SELECT c.id as conquest_id, c.commander_id, c.date, c.phase, ' .
@@ -76,10 +80,10 @@ class ConquestRepository {
     {
         switch ($phase)
         {
-            case ConquestRepository::Phase1: 
+            case Phases::Phase1: 
                 $phaseNumber = 1;
                 break;
-            case ConquestRepository::Phase2:
+            case Phases::Phase2:
                 $phaseNumber = 2;
                 break;
             default:
@@ -95,17 +99,17 @@ class ConquestRepository {
     private function GetPhase(DateTime $dateTime)
     {
         $hour = $dateTime->format('H');
-        if ($hour == ConquestRepository::Phase1)
+        if ($hour == Phases::Phase1)
         {
-            return ConquestRepository::Phase1;
+            return Phases::Phase1;
         }
-        else if ($hour == ConquestRepository::Phase2)
+        else if ($hour == Phases::Phase2)
         {
-            return ConquestRepository::Phase2;
+            return Phases::Phase2;
         }
         else
         {
-            return ConquestRepository::Phase3;
+            return Phases::Phase3;
         }
     }
     
@@ -118,46 +122,47 @@ class ConquestRepository {
         switch ($dayOfWeek)
         {
             case 'Tuesday':                
-                if ($hour <= ConquestRepository::Phase3 + ConquestRepository::PhaseLength)
+                if ($hour <= Phases::Phase3 + Phases::PhaseLength)
                 {
-                    $date->setTime(ConquestRepository::Phase3, 0, 0);
+                    $date->setTime(Phases::Phase3, 0, 0);
                 }
                 else
                 {
                     $date->modify('+3 day');
-                    $date->setTime(ConquestRepository::Phase1, 0, 0);
+                    $date->setTime(Phases::Phase1, 0, 0);
                 }
                 break;
             case 'Wednesday':
                 $date->modify('+2 day');
-                $date->setTime(ConquestRepository::Phase1, 0, 0);
+                $date->setTime(Phases::Phase1, 0, 0);
                 break;
             case 'Thursday':
                 $date->modify('+1 day');
-                $date->setTime(ConquestRepository::Phase1, 0, 0);
+                $date->setTime(Phases::Phase1, 0, 0);
                 break;
             case 'Friday':
-                if ($hour <= ConquestRepository::Phase1 + ConquestRepository::PhaseLength)
+                if ($hour <= Phases::Phase1 + Phases::PhaseLength)
                 {
-                    $date->setTime(ConquestRepository::Phase1, 0, 0);
+                    $date->setTime(Phases::Phase1, 0, 0);
                 }
                 else
                 {
-                    $date->setTime(ConquestRepository::Phase2, 0, 0);
+                    $date->setTime(Phases::Phase2, 0, 0);
                 }
             case 'Saturday':
             case 'Sunday':
-                if ($hour <= ConquestRepository::Phase3 + ConquestRepository::PhaseLength)
+            case 'Monday':
+                if ($hour <= Phases::Phase3 + Phases::PhaseLength)
                 {
-                    $date->setTime(ConquestRepository::Phase3, 0, 0);
+                    $date->setTime(Phases::Phase3, 0, 0);
                 }
-                else if ($hour <= ConquestRepository::Phase1 + ConquestRepository::PhaseLength)
+                else if ($hour <= Phases::Phase1 + Phases::PhaseLength)
                 {
-                    $date->setTime(ConquestRepository::Phase1, 0, 0);
+                    $date->setTime(Phases::Phase1, 0, 0);
                 }
                 else
                 {
-                    $date->setTime(ConquestRepository::Phase2, 0, 0);
+                    $date->setTime(Phases::Phase2, 0, 0);
                 }
                 break;
             default:
