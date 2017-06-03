@@ -65,7 +65,6 @@ class StrikeCommandProcessor implements ICommandProcessor{
         $zone = $this->zoneRepository->GetZone($conquest, $zone);
         $this->CreateNodes($zone, $hold);
         $nodes = $this->nodeRepository->GetAllNodes($zone);
-        error_log(print_r($nodes,1));
         $this->CreateStrikes($nodes);
         $this->response = "Strike map has been setup for zone " . $zone->zone;
     }

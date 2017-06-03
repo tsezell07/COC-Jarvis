@@ -12,7 +12,7 @@ use dal\models\NodeModel;
 use dal\models\ZoneModel;
 use dal\DataAccessAdapter;
 use dal\ModelBuildingHelper;
-
+use dal\models\StrikeModel;
 /**
  * Description of StrikeRepository
  *
@@ -33,6 +33,14 @@ class StrikeRepository {
         $this->adapter->query($sql);
     }
     
+    public function ClearStrike(StrikeModel $strike)
+    {
+        $sql = 'UPDATE conquest_strikes ' .
+                "SET user_id = null " .
+                'WHERE id = ' . $strike->id;
+        $this->adapter->query($sql);
+    }
+    
     public function CreateStrike(NodeModel $node, UserModel $user=null)
     {
         $userValue = $user == null ? 'null' : "'" . $user->id . "'";
@@ -50,7 +58,7 @@ class StrikeRepository {
                     'c.commander_id, c.date, c.phase, ' .
                     'u.id as user_id, u.name, u.vip ' .
                 'FROM conquest_strikes s ' .
-                'INNER JOIN users a ON a.id = s.user_id ' .
+                'LEFT JOIN users a ON a.id = s.user_id ' .
                 'INNER JOIN conquest_nodes n ON n.id = s.id ' . 
                 'INNER JOIN conquest_zones z ON z.id = n.zone_id ' .
                 'INNER JOIN conquest c ON c.id = z.conquest_id ' .
@@ -81,7 +89,6 @@ class StrikeRepository {
         $toReturn = [];
         foreach ($results as $item)
         {
-            error_log($results);
             $strike = ModelBuildingHelper::BuildStrikeModel($item);
             array_push($toReturn, $strike);
         }        
