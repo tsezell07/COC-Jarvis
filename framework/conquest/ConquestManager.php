@@ -33,6 +33,36 @@ class ConquestManager {
         $this->strikeRepository = new StrikeRepository();
     }
     
+    public function GetSummaryStats()
+    {
+        $now = new DateTime();
+        $lastStartDate = $this->GetLastStartDate($now);
+        $endDate = new DateTime($lastStartDate->format('Y-m-d'));
+        $lastEndDate = $endDate->modify('+5 day');
+        
+        $conquests = $this->conquestRepository->GetConquests($lastStartDate, $lastEndDate);
+        
+        $zones = [];
+        $nodes = [];
+        $strikes = [];
+        foreach ($conquests as $conquest)
+        {
+            $zones = array_merge($zones, $this->zoneRepository->GetAllZonesByConquest($conquest));
+            $nodes = array_merge($nodes, $this->nodeRepository->GetAllNodesByConquest($conquest));
+            $strikes = array_merge($strikes, $this->strikeRepository->GetStrikesByConquest($conquest));
+        }
+        
+        $toReturn = new StatsDto();
+        $toReturn->forDate = $lastStartDate;
+        $toReturn->endDate = $lastEndDate;
+        $toReturn->conquests = $conquests;
+        $toReturn->zones = $zones;
+        $toReturn->nodes = $nodes;
+        $toReturn->strikes = $strikes;
+        
+        return $toReturn;
+    }
+    
     public function GetLastPhaseStats()
     {
         $now = new DateTime();
@@ -58,6 +88,45 @@ class ConquestManager {
         $toReturn->strikes = $strikes;
         
         return $toReturn;
+    }
+    
+    private function GetLastStartDate(DateTime $dateTime)
+    {
+        $dayOfWeek = $dateTime->format('l');
+        $hour = $dateTime->format('H');
+        $date = new DateTime($dateTime->format('m/d/Y'));
+        error_log($date->format('m/d/Y'));
+        switch ($dayOfWeek)
+        {
+            case 'Tuesday':
+                $date->modify('-4 day');
+                break;
+            case 'Wednesday':
+                $date->modify('-5 day');
+                break;
+            case 'Thursday':
+                $date->modify('-6 day');
+                break;
+            case 'Friday':
+                if ($hour < Phases::Phase1)
+                {
+                    $date->modify('-7 day');
+                }
+                break;
+            case 'Saturday':
+                $date->modify('-1 day');
+                break;
+            case 'Sunday':
+                $date->modify('-2 day');
+                break;
+            case 'Monday':
+                $date->modify('-3 day');
+                break;
+            default:
+                break;
+        }
+        error_log($date->format('m/d/Y'));
+        return $date;
     }
     
     private function GetLastPhaseDate(DateTime $dateTime)

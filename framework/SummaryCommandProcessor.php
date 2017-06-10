@@ -10,13 +10,12 @@ namespace framework;
 use framework\slack\SlackApi;
 use framework\conquest\ConquestManager;
 use framework\conquest\StatsDto;
-
 /**
- * Description of StatsCommandProcessor
+ * Description of SummaryCommandProcessor
  *
  * @author chris
  */
-class StatsCommandProcessor implements ICommandProcessor {
+class SummaryCommandProcessor implements ICommandProcessor {
     private $eventData;
     private $slackApi;
     private $conquestManager;
@@ -32,10 +31,10 @@ class StatsCommandProcessor implements ICommandProcessor {
         $this->conquestManager = new ConquestManager();
         $this->attachments = array();
     }
-    
+
     public function Process()
     {
-        $stats = $this->conquestManager->GetLastPhaseStats();
+        $stats = $this->conquestManager->GetSummaryStats();
         
         $this->BuildDateSummary($stats);
         $this->BuildZoneSummary($stats, $this->attachments);
@@ -43,25 +42,15 @@ class StatsCommandProcessor implements ICommandProcessor {
     }
 
     public function SendResponse() 
-    {
+    {    
         $this->slackApi->SendMessage($this->response, $this->attachments, $this->eventData['channel']);
     }
     
     private function BuildDateSummary(StatsDto $stats)
     {
-        if ($stats->endDate == null)
-        {
-            $conquest = $stats->conquests[0];
-            $this->response = 'Here is the summary for the conquest on *' .
-                    $conquest->date->format('Y-m-d') . '* ' .
-                    'phase *' . $conquest->phase . '*: ';
-        }
-        else
-        {
-            $this->response = 'Here is the summary for the conquest between ' .
-                    $stats->forDate->format('Y-m-d H:i:s') . 'and ' .
-                    $stats->endDate->format('Y-m-d H:i:s');
-        }
+        $this->response = 'Here is the summary for the conquest between *' .
+                $stats->forDate->format('Y-m-d') . '* and *' .
+                $stats->endDate->format('Y-m-d') . '*:';
     }
     
     private function BuildZoneSummary(StatsDto $stats, &$attachments)
@@ -108,18 +97,21 @@ class StatsCommandProcessor implements ICommandProcessor {
         $fields = array();
         
         $attackDictionary = array();
+        $totalNonemptyAttacks = 0;
         foreach ($stats->strikes as $strike)
         {
             if ($strike->user_id != null)
             {
                 $attackDictionary["<@" . $strike->user->name . ">"]++;
+                $totalNonemptyAttacks++;
             }
         }
 
         arsort($attackDictionary);
         array_push($fields, array(
-            'title' => 'Members Summary',
-            'value' => 'A total of *' . sizeof($attackDictionary) . "* members have participated in this phase!\n" . 
+            'title' => 'Participation Summary',
+            'value' => 'A total of *' . sizeof($attackDictionary) . "* members have participated in this conquest!\n" . 
+                'This means we had a participation rate of *' . number_format(sizeof($attackDictionary) / 40 * 100, 2) . "%*!\n" .
                 implode(', ', array_keys($attackDictionary)) . "\n\nWe could not have done it without you!"
         ));
         
@@ -130,25 +122,16 @@ class StatsCommandProcessor implements ICommandProcessor {
             'mrkdwn_in' => ["fields"]
         ));
         
-        $first = $this->GetTopAttackerByLimit($attackDictionary);
-        if (sizeof($first[1]) > 0)
+        $message = '';
+        foreach ($attackDictionary as $attacker => $attackCount)
         {
-            $message = implode(', ', $first[1]) . ': ' . $first[0] . " hits!  Smashing!\n";
-            $second = $this->GetTopAttackerByLimit($attackDictionary, $first[0]);       
-        }
-        if (sizeof($second[1]) > 0)
-        {
-            $message .= implode(', ', $second[1]) . ': ' . $second[0] . " hits!  Amazing!\n";
-            $third = $this->GetTopAttackerByLimit($attackDictionary, $second[0]);
-        }
-        if (sizeof($third[1]) > 0)
-        {
-            $message .= implode(', ', $third[1]) . ': ' . $third[0] . ' hits!  Spectacular!';
+            $message .= $attacker . ' - ' . $attackCount . ' hits! ' .
+                    '(*' . number_format($attackCount / $totalNonemptyAttacks * 100, 2) . "%*)\n";
         }
         
         $achievements = array();
         array_push($achievements, array(
-            'title' => 'Achievements',
+            'title' => 'Attack Summary',
             'value' => $message
         ));
         
@@ -158,20 +141,5 @@ class StatsCommandProcessor implements ICommandProcessor {
             'fields' => $achievements,
             'mrkdwn_in' => ["fields"]
         ));
-    }
-    
-    private function GetTopAttackerByLimit($attackDictionary, $limit=0)
-    {
-        $topAttackCount = 0;
-        $topAttackers = array();
-        foreach ($attackDictionary as $attacker => $attackCount)
-        {
-            if ($attackCount >= $topAttackCount && ($limit == 0 || $attackCount < $limit))
-            {
-                $topAttackCount = $attackCount;
-                array_push($topAttackers, $attacker);
-            }
-        }
-        return array($topAttackCount, $topAttackers);
     }
 }

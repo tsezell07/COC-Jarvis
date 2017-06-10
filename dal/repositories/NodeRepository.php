@@ -83,6 +83,10 @@ class NodeRepository {
                 'WHERE c.id = ' . $conquest->id;
         $results = $this->adapter->query($sql);
         $toReturn = [];
+        if ($results == null)
+        {
+            return $toReturn;
+        }
         foreach ($results as $item)
         {
             $node = ModelBuildingHelper::BuildNodeModel($item);

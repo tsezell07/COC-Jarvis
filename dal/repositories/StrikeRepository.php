@@ -113,6 +113,10 @@ class StrikeRepository {
                 'WHERE c.id = ' . $conquest->id ;
         $results = $this->adapter->query($sql);
         $toReturn = [];
+        if ($results == null)
+        {
+            return $toReturn;
+        }
         foreach ($results as $item)
         {
             $strike = ModelBuildingHelper::BuildStrikeModel($item);

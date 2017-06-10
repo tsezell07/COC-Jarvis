@@ -59,6 +59,31 @@ class ConquestRepository {
         return $this->GetConquest($day, $phase);
     }
     
+    public function GetConquests(DateTime $startDate, DateTime $endDate=null)
+    {
+        $sql = 'SELECT c.id as conquest_id, c.commander_id, c.date, c.phase, ' .
+                    'u.id as user_id, u.name, u.vip ' .
+                'FROM conquest c ' .
+                'LEFT JOIN users u ON u.id = c.commander_id ' .
+                "WHERE c.date >= '" . $startDate->format('Y-m-d') . "' ";
+        if ($endDate != null)
+        {
+            $sql .= "AND c.date <= '" . $endDate->format('Y-m-d') . "' "; 
+        }
+        $results = $this->adapter->query($sql);        
+        $toReturn = [];
+        if ($results == null)
+        {
+            return $toReturn;
+        }
+        foreach ($results as $item)
+        {
+            $node = ModelBuildingHelper::BuildConquestModel($item);
+            array_push($toReturn, $node);
+        }        
+        return $toReturn;
+    }
+    
     private function GetConquest(DateTime $dateTime, $phase, UserModel $user=null)
     {
         $sql = 'SELECT c.id as conquest_id, c.commander_id, c.date, c.phase, ' .

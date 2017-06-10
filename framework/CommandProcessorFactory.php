@@ -24,6 +24,7 @@ class CommandProcessorFactory {
     private $HoldRegex = '/(hold) (\d{1,2})(\.|-)(\d{1,2})/i';
     private $ClearRegex = '/(clear) (\d{1,2})(\.|-)(\d{1,2})/i';
     private $StatsRegex = '/(stats)/i';
+    private $SummaryRegex = '/(summary)/i';
     
     public function CreateProcessor(Request $request)
     { 
@@ -76,6 +77,10 @@ class CommandProcessorFactory {
         else if (preg_match($this->StatsRegex, $text))
         {
             return new StatsCommandProcessor($event);
+        }
+        else if (preg_match($this->SummaryRegex, $text))
+        {
+            return new SummaryCommandProcessor($event);
         }
         return null;
     }
