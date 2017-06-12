@@ -49,6 +49,12 @@ class NodeCallCommandProcessor implements ICommandProcessor{
         //$this->response = $zoneValue . ':' . $nodeValue;
         $conquest = $this->conquestRepository->GetCurrentConquest();
         $zone = $this->zoneRepository->GetZone($conquest, $zoneValue);
+        if ($zone->is_owned)
+        {
+            $this->response = "That zone (*$zoneValue*) is no longer active, please double check your call!";
+            return;
+        }
+        
         $node = $this->nodeRepository->GetNode($zone, $nodeValue);
         $user = $this->userRepository->GetUserById($this->eventData['user']);
         
