@@ -1,2 +1,2 @@
-# Hudson
-Expanding on Alpha Flight's Slack integrations
+# COC-Jarvis
+Expanding on Reddit Titans COC Bot integration
